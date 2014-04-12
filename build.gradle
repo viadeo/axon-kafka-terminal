@@ -5,6 +5,13 @@ apply plugin: 'idea'
 group = 'com.viadeo.axonframework'
 version = '0.1'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+// Use UTF-8 for reading xml (and other) data tests files
+tasks.withType(Test) { systemProperty "file.encoding", "UTF-8"  }
+tasks.withType(Compile) { options.encoding = "UTF-8" }
+
 task wrapper(type: Wrapper) {
     gradleVersion = '1.10'
 }

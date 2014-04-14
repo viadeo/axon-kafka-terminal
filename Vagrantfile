@@ -13,6 +13,6 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 9092, host: 9092
   config.vm.network "forwarded_port", guest: 2181, host: 2181
 
-  config.vm.provision "shell", path: "provision.sh"
+  config.vm.provision "shell", path: "vagrant/setup.sh"
 
 end

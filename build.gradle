@@ -28,7 +28,6 @@ dependencies {
   }
   compile 'org.axonframework:axon-core:2.0.5'
   compile 'com.google.guava:guava:13.0.1'
-  compile 'com.101tec:zkclient:0.3'
   compile 'com.codahale.metrics:metrics-core:3.0.1'
 
   testCompile 'junit:junit:4.11'

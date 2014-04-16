@@ -8,9 +8,7 @@ import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.*;
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
+import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +18,7 @@ import java.util.Map;
 
 import static com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory.from;
 
-public class EventBusRule implements MethodRule {
+public class EventBusRule extends ExternalResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventBusRule.class);
 
@@ -38,21 +36,16 @@ public class EventBusRule implements MethodRule {
     }
 
     @Override
-    public Statement apply(final Statement base, final FrameworkMethod method, final Object target) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                eventBusWrapper = new EventBusWrapper(
-                        clusterSelectorFactory.create(),
-                        terminalFactory.create()
-                );
-                try {
-                    base.evaluate();
-                } finally {
-                    shutdown();
-                }
-            }
-        };
+    protected void before() throws Throwable {
+        eventBusWrapper = new EventBusWrapper(
+                clusterSelectorFactory.create(),
+                terminalFactory.create()
+        );
+    }
+
+    @Override
+    protected void after() {
+        shutdown();
     }
 
     private void shutdown() {
@@ -68,6 +61,10 @@ public class EventBusRule implements MethodRule {
     public void subscribe(final EventListener... eventListeners) {
         LOGGER.info("subscribing {} event listeners...", eventListeners.length);
         eventBusWrapper.subscribe(eventListeners);
+    }
+
+    public void unsubscribeAll() {
+        eventBusWrapper.unsubscribeAll();
     }
 
     public static class EventBusWrapper implements Shutdownable {

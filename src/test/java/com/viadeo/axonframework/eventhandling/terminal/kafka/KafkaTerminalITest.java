@@ -2,6 +2,7 @@ package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.viadeo.axonframework.eventhandling.EventBusRule;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.SnoopEventListener;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupa.GroupA;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupb.GroupB;
@@ -20,8 +21,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class KafkaTerminalITest {
-
-    private static EventBusWrapper EVENT_BUS;
 
     private static final long TIMEOUT = 2000L;
 
@@ -42,30 +41,18 @@ public class KafkaTerminalITest {
             .build();
 
 
-    @BeforeClass
-    public static void setup() {
-        EVENT_BUS = new EventBusWrapper(
-                createClusterSelectorFactory(PREFIX).create(),
-                createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP).create()
-        );
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        EVENT_BUS.shutdown();
-    }
+    @Rule
+    public final EventBusRule eventBusRule = new EventBusRule(
+            EventBusRule.createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
+            EventBusRule.createClusterSelectorFactory(PREFIX)
+    );
 
     @Before
     public void init() {
         // consume everything for each group in order to keep integrity for each test!! TODO found a better way !!
-        EVENT_BUS.subscribe(new GroupA.EventListenerA());
-        EVENT_BUS.subscribe(new GroupB.EventListenerA());
-        EVENT_BUS.unsubscribeAll();
-    }
-
-    @After
-    public void clear() {
-        EVENT_BUS.unsubscribeAll();
+        eventBusRule.subscribe(new GroupA.EventListenerA());
+        eventBusRule.subscribe(new GroupB.EventListenerA());
+        eventBusRule.unsubscribeAll();
     }
 
     @Test
@@ -78,10 +65,10 @@ public class KafkaTerminalITest {
         final SnoopEventListener delegateEventListener = new SnoopEventListener(countDownLatch);
         final GroupA.EventListenerA eventListener = spy(new GroupA.EventListenerA(delegateEventListener));
 
-        EVENT_BUS.subscribe(eventListener);
+        eventBusRule.subscribe(eventListener);
 
         // When
-        EVENT_BUS.publish(eventMessage);
+        eventBusRule.publish(eventMessage);
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         // Then
@@ -106,11 +93,11 @@ public class KafkaTerminalITest {
         final SnoopEventListener delegateEventListener = new SnoopEventListener(countDownLatch);
         final GroupA.EventListenerA eventListener = spy(new GroupA.EventListenerA(delegateEventListener));
 
-        EVENT_BUS.subscribe(eventListener);
+        eventBusRule.subscribe(eventListener);
 
         // When
         for (final CustomEventMessage eventMessage : eventMessages) {
-            EVENT_BUS.publish(eventMessage);
+            eventBusRule.publish(eventMessage);
         }
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
@@ -138,10 +125,10 @@ public class KafkaTerminalITest {
         final SnoopEventListener delegateEventListenerAOfGroupB = new SnoopEventListener(countDownLatch);
         final GroupB.EventListenerA eventListenerAOfGroupB = spy(new GroupB.EventListenerA(delegateEventListenerAOfGroupB));
 
-        EVENT_BUS.subscribe(eventListenerAOfGroupA, eventListenerAOfGroupB);
+        eventBusRule.subscribe(eventListenerAOfGroupA, eventListenerAOfGroupB);
 
         // When
-        EVENT_BUS.publish(eventMessage);
+        eventBusRule.publish(eventMessage);
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         // Then
@@ -172,11 +159,11 @@ public class KafkaTerminalITest {
                 createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP).create()
         );
 
-        EVENT_BUS.subscribe(eventListenerA);
+        eventBusRule.subscribe(eventListenerA);
         eventBusB.subscribe(eventListenerB);
 
         // When
-        EVENT_BUS.publish(eventMessage);
+        eventBusRule.publish(eventMessage);
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         // Then

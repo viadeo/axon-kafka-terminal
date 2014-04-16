@@ -85,7 +85,7 @@ public class KafkaClusterListener implements Shutdownable {
         public void run() {
             final ConsumerIterator<byte[], EventMessage> it = stream.iterator();
 
-            LOGGER.debug("Running stream listener!", cluster.getName());
+            LOGGER.debug("Running stream listener : {}", cluster.getName());
 
             while (it.hasNext()) {
                 final EventMessage message = it.next().message();

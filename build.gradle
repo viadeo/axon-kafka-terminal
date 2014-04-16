@@ -30,6 +30,14 @@ dependencies {
   compile 'com.google.guava:guava:13.0.1'
   compile 'com.codahale.metrics:metrics-core:3.0.1'
 
+  compile 'org.slf4j:slf4j-api:1.7.5'
+  compile 'org.slf4j:jul-to-slf4j:1.7.5'
+  compile 'org.slf4j:jcl-over-slf4j:1.7.5'
+  compile 'ch.qos.logback:logback-core:1.0.13'
+  compile 'ch.qos.logback.contrib:logback-jackson:0.1.2'
+  compile 'ch.qos.logback.contrib:logback-json-classic:0.1.2'
+  compile 'ch.qos.logback:logback-classic:1.0.13'
+
   testCompile 'junit:junit:4.11'
   testCompile 'org.mockito:mockito-all:1.9.5-rc1'
   testCompile 'org.powermock:powermock-module-junit4:1.5.3'

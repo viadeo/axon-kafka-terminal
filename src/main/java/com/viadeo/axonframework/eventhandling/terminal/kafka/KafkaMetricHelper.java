@@ -2,12 +2,12 @@ package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
 import com.codahale.metrics.MetricRegistry;
 
-public class TerminalMetricHelper {
+public class KafkaMetricHelper {
 
     private final MetricRegistry metricRegistry;
     private final String prefix;
 
-    public TerminalMetricHelper(final MetricRegistry metricRegistry, final String prefix) {
+    public KafkaMetricHelper(final MetricRegistry metricRegistry, final String prefix) {
         this.metricRegistry = metricRegistry;
         this.prefix = prefix;
     }

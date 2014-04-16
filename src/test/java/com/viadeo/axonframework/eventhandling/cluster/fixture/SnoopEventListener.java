@@ -1,20 +1,20 @@
 package com.viadeo.axonframework.eventhandling.cluster.fixture;
 
+import com.google.common.collect.Lists;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.EventListener;
-import org.junit.Assert;
 
-import java.util.Queue;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class SnoopEventListener implements EventListener {
 
     public final CountDownLatch countDownLatch;
-    public final Queue<? extends EventMessage> expectedEvents;
+    public final List<EventMessage> actualEvents;
 
-    public SnoopEventListener(final CountDownLatch countDownLatch, final Queue<? extends EventMessage> expectedEvents) {
-        this.expectedEvents = expectedEvents;
+    public SnoopEventListener(final CountDownLatch countDownLatch) {
         this.countDownLatch = countDownLatch;
+        this.actualEvents = Lists.newArrayList();
     }
 
     @Override
@@ -24,7 +24,7 @@ public class SnoopEventListener implements EventListener {
                 throw new AssertionError("unexpected event message : " + eventMessage);
             }
             countDownLatch.countDown();
-            Assert.assertEquals(expectedEvents.poll(), eventMessage);
+            actualEvents.add(eventMessage);
         }
     }
 }

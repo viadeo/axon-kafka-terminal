@@ -1,7 +1,7 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
 import com.google.common.collect.Sets;
-import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.consumer.ConsumerConnector;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import org.axonframework.domain.EventMessage;
@@ -111,7 +111,7 @@ public class KafkaTerminalUTest {
         terminal.onClusterCreated(cluster);
 
         // Then
-        assertEquals(1, terminal.getConsumers().size());
+        assertEquals(1, terminal.getClusterListeners().size());
     }
 
     @Test
@@ -134,7 +134,7 @@ public class KafkaTerminalUTest {
         terminal.onClusterCreated(cluster);
 
         // Then
-        assertEquals(1, terminal.getConsumers().size());
+        assertEquals(1, terminal.getClusterListeners().size());
     }
 
 }

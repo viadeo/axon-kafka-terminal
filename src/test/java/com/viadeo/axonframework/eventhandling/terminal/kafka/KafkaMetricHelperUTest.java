@@ -8,7 +8,7 @@ import org.junit.Test;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 
-public class TerminalMetricHelperUTest {
+public class KafkaMetricHelperUTest {
 
     private Meter meter;
     private MetricRegistry metricRegistry;
@@ -25,10 +25,10 @@ public class TerminalMetricHelperUTest {
     public void markReceivedMessage_markTwoMeters() {
         // Given
         final String prefix = "foo";
-        final TerminalMetricHelper terminalMetricHelper = new TerminalMetricHelper(metricRegistry, prefix);
+        final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        terminalMetricHelper.markReceivedMessage("bar");
+        kafkaMetricHelper.markReceivedMessage("bar");
 
         // Then
         verify(metricRegistry).meter("foo.bar.received_message");
@@ -40,10 +40,10 @@ public class TerminalMetricHelperUTest {
     public void markErroredWhileReceivingMessage_markTwoMeters() {
         // Given
         final String prefix = "foo";
-        final TerminalMetricHelper terminalMetricHelper = new TerminalMetricHelper(metricRegistry, prefix);
+        final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        terminalMetricHelper.markErroredWhileReceivingMessage("bar");
+        kafkaMetricHelper.markErroredWhileReceivingMessage("bar");
 
         // Then
         verify(metricRegistry).meter("foo.bar.received_message_errors");
@@ -55,10 +55,10 @@ public class TerminalMetricHelperUTest {
     public void markSentMessage_markTwoMeters() {
         // Given
         final String prefix = "foo";
-        final TerminalMetricHelper terminalMetricHelper = new TerminalMetricHelper(metricRegistry, prefix);
+        final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        terminalMetricHelper.markSentMessage("bar");
+        kafkaMetricHelper.markSentMessage("bar");
 
         // Then
         verify(metricRegistry).meter("foo.bar.sent_message");
@@ -70,10 +70,10 @@ public class TerminalMetricHelperUTest {
     public void markErroredWhileSendingMessage_markTwoMeters() {
         // Given
         final String prefix = "foo";
-        final TerminalMetricHelper terminalMetricHelper = new TerminalMetricHelper(metricRegistry, prefix);
+        final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        terminalMetricHelper.markErroredWhileSendingMessage("bar");
+        kafkaMetricHelper.markErroredWhileSendingMessage("bar");
 
         // Then
         verify(metricRegistry).meter("foo.bar.sent_message_errors");

@@ -1,8 +1,11 @@
 package com.viadeo.axonframework.eventhandling;
 
 import com.google.common.collect.Lists;
+import com.viadeo.axonframework.eventhandling.cluster.ClassnameDynamicClusterSelectorFactory;
+import com.viadeo.axonframework.eventhandling.cluster.ClusterFactory;
 import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
 import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
+import com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.*;
 import org.junit.rules.MethodRule;
@@ -13,6 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+
+import static com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory.from;
 
 public class EventBusRule implements MethodRule {
 
@@ -60,6 +66,7 @@ public class EventBusRule implements MethodRule {
     }
 
     public void subscribe(final EventListener... eventListeners) {
+        LOGGER.info("subscribing {} event listeners...", eventListeners.length);
         eventBusWrapper.subscribe(eventListeners);
     }
 
@@ -104,5 +111,21 @@ public class EventBusRule implements MethodRule {
                 }
             }
         }
+    }
+
+    public static ClusterSelectorFactory createClusterSelectorFactory(final String prefix) {
+        return new ClassnameDynamicClusterSelectorFactory(
+                prefix,
+                new ClusterFactory() {
+                    @Override
+                    public Cluster create(final String name) {
+                        return new SimpleCluster(name);
+                    }
+                }
+        );
+    }
+
+    public static EventBusTerminalFactory createEventBusTerminalFactory(final Map<String, String> properties) {
+        return new KafkaTerminalFactory(from(properties));
     }
 }

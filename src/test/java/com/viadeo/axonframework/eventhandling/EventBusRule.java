@@ -6,6 +6,7 @@ import com.viadeo.axonframework.eventhandling.cluster.ClusterFactory;
 import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
 import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory;
+import com.viadeo.axonframework.eventhandling.terminal.kafka.PrefixTopicStrategy;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.*;
 import org.junit.rules.ExternalResource;
@@ -37,9 +38,14 @@ public class EventBusRule extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
+//        final String prefix = UUID.randomUUID().toString();
+        final String prefix = "";
+
+        LOGGER.debug("Generated topic prefix : {}", prefix);
+
         eventBusWrapper = new EventBusWrapper(
                 clusterSelectorFactory.create(),
-                terminalFactory.create()
+                terminalFactory.with(new PrefixTopicStrategy(prefix)).create()
         );
     }
 

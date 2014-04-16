@@ -77,7 +77,7 @@ public class KafkaTerminalUTest {
         kafkaTerminal.publish(message);
 
         // Then
-        verify(producer).send(refEq(new KeyedMessage<>(String.class.getName(), "1", message)));
+        verify(producer).send(refEq(new KeyedMessage<>(String.class.getName().toLowerCase(), "1", message)));
     }
 
     @Test(expected = NullPointerException.class)

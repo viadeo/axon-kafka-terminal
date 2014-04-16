@@ -28,13 +28,13 @@ public class KafkaClusterListener implements Shutdownable {
     public KafkaClusterListener(
             final ConsumerFactory consumerFactory,
             final KafkaMetricHelper metricHelper,
-            final TopicNormalizer topicNormalizer,
+            final TopicStrategy topicStrategy,
             final Cluster cluster,
             final int numberOfStreamListener
     ) {
         checkNotNull(consumerFactory);
         checkNotNull(metricHelper);
-        checkNotNull(topicNormalizer);
+        checkNotNull(topicStrategy);
         checkNotNull(cluster);
 
         checkArgument(numberOfStreamListener > 0, "The number of stream listener must be greater or equal to 1");
@@ -46,7 +46,7 @@ public class KafkaClusterListener implements Shutdownable {
 
         final List<KafkaStream<byte[], EventMessage>> streams = consumerFactory.createStreams(numberOfStreamListener, consumer);
         for (final KafkaStream<byte[], EventMessage> stream : streams) {
-            executor.submit(new KafkaStreamListener(cluster, stream, metricHelper, topicNormalizer));
+            executor.submit(new KafkaStreamListener(cluster, stream, metricHelper, topicStrategy));
         }
 
         LOGGER.debug("Created cluster listener on '{}'", cluster.getName());
@@ -67,18 +67,18 @@ public class KafkaClusterListener implements Shutdownable {
         private final Cluster cluster;
         private final KafkaStream<byte[], EventMessage> stream;
         private final KafkaMetricHelper metricHelper;
-        private final TopicNormalizer topicNormalizer;
+        private final TopicStrategy topicStrategy;
 
         public KafkaStreamListener(
                 final Cluster cluster,
                 final KafkaStream<byte[], EventMessage> stream,
                 final KafkaMetricHelper metricHelper,
-                final TopicNormalizer topicNormalizer
+                final TopicStrategy topicStrategy
         ) {
             this.cluster = checkNotNull(cluster);
             this.stream = checkNotNull(stream);
             this.metricHelper= checkNotNull(metricHelper);
-            this.topicNormalizer = checkNotNull(topicNormalizer);
+            this.topicStrategy = checkNotNull(topicStrategy);
         }
 
         @Override
@@ -90,7 +90,7 @@ public class KafkaClusterListener implements Shutdownable {
             while (it.hasNext()) {
                 final EventMessage message = it.next().message();
 
-                final String topic = topicNormalizer.normalize(message.getPayloadType().getName());
+                final String topic = topicStrategy.getTopic(message);
 
                 try {
                     cluster.publish(message);

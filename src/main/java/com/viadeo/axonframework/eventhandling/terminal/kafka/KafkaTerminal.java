@@ -30,14 +30,14 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
     private final Map<String, KafkaClusterListener> clusterListenerByGroup;
     private final Producer<String,EventMessage> producer;
     private final ConsumerFactory consumerFactory;
-    private final TopicNormalizer topicNormalizer;
+    private final TopicStrategy topicStrategy;
     private final KafkaMetricHelper metricHelper;
 
     public KafkaTerminal(final ConsumerFactory consumerFactory, final ProducerFactory producerFactory) {
         this(
                 consumerFactory,
                 producerFactory,
-                new TopicNormalizer(),
+                new DefaultTopicStrategy(),
                 new KafkaMetricHelper(new MetricRegistry(), KafkaTerminal.class.getName().toLowerCase())
         );
     }
@@ -45,13 +45,13 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
     public KafkaTerminal(
             final ConsumerFactory consumerFactory,
             final ProducerFactory producerFactory,
-            final TopicNormalizer topicNormalizer,
+            final TopicStrategy topicStrategy,
             final KafkaMetricHelper metricHelper
     ) {
         this.metricHelper = metricHelper;
         this.consumerFactory = checkNotNull(consumerFactory);
         this.producer = checkNotNull(producerFactory).create();
-        this.topicNormalizer = checkNotNull(topicNormalizer);
+        this.topicStrategy = checkNotNull(topicStrategy);
         this.clusterListenerByGroup = Maps.newHashMap();
     }
 
@@ -60,7 +60,7 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
         checkNotNull(eventMessages);
 
         for (final EventMessage eventMessage : eventMessages) {
-            final String topic = topicNormalizer.normalize(eventMessage.getPayloadType().getName());
+            final String topic = topicStrategy.getTopic(eventMessage);
 
             final KeyedMessage<String, EventMessage> message = new KeyedMessage<>(
                     topic,
@@ -89,7 +89,7 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
         if ( ! clusterListenerByGroup.containsKey(group)) {
             clusterListenerByGroup.put(
                     group,
-                    new KafkaClusterListener(consumerFactory, metricHelper, topicNormalizer, cluster, 1)
+                    new KafkaClusterListener(consumerFactory, metricHelper, topicStrategy, cluster, 1)
             );
         }
     }

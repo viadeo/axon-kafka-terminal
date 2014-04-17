@@ -2,19 +2,27 @@ package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.viadeo.axonframework.eventhandling.EventBusRule;
+import com.viadeo.axonframework.eventhandling.TestEventBus;
+import com.viadeo.axonframework.eventhandling.cluster.ClassnameDynamicClusterSelectorFactory;
+import com.viadeo.axonframework.eventhandling.cluster.ClusterFactory;
+import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.SnoopEventListener;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupa.GroupA;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupb.GroupB;
+import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
-import org.junit.*;
+import org.axonframework.eventhandling.Cluster;
+import org.axonframework.eventhandling.SimpleCluster;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.viadeo.axonframework.eventhandling.EventBusRule.*;
+import static com.viadeo.axonframework.eventhandling.terminal.kafka.KafkaTerminalFactory.from;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -22,11 +30,11 @@ import static org.mockito.Mockito.*;
 
 public class KafkaTerminalITest {
 
-    private static final long TIMEOUT = 2000L;
+    private static final long TIMEOUT = 8000L;
 
     private static final String PREFIX = "com.viadeo.axonframework.eventhandling.cluster.fixture";
 
-    private static final ImmutableMap<String, String> KAFKA_PROPERTIES_MAP = ImmutableMap.<String, String>builder()
+    public static final ImmutableMap<String, String> KAFKA_PROPERTIES_MAP = ImmutableMap.<String, String>builder()
             // PRODUCER
             .put("metadata.broker.list", "192.168.5.30:9092")
             .put("request.required.acks", "1")
@@ -36,24 +44,18 @@ public class KafkaTerminalITest {
             .put("zookeeper.connect", "192.168.5.30:2181")
              // this property will be overridden by the cluster
             .put("group.id", "0")
-            .put("auto.offset.reset", "largest")
+            // !important; without the following property then this suite is unstable (due to the process of the auto creation topic)
+            .put("auto.offset.reset", "smallest")
 
             .build();
 
-
     @Rule
-    public final EventBusRule eventBusRule = new EventBusRule(
-            EventBusRule.createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
-            EventBusRule.createClusterSelectorFactory(PREFIX)
-    );
+    public final TestEventBus eventBusRule = new TestEventBus(
+            createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
+            createClusterSelectorFactory(PREFIX),
+            KAFKA_PROPERTIES_MAP.get("zookeeper.connect")
+    ).with(new GenericEventMessage<>(""));
 
-    @Before
-    public void init() {
-        // consume everything for each group in order to keep integrity for each test!! TODO found a better way !!
-        eventBusRule.subscribe(new GroupA.EventListenerA());
-        eventBusRule.subscribe(new GroupB.EventListenerA());
-        eventBusRule.unsubscribeAll();
-    }
 
     @Test
     public void an_event_listener_should_receive_an_event_after_publication() throws InterruptedException {
@@ -121,11 +123,11 @@ public class KafkaTerminalITest {
 
         final SnoopEventListener delegateEventListenerAOfGroupA = new SnoopEventListener(countDownLatch);
         final GroupA.EventListenerA eventListenerAOfGroupA = spy(new GroupA.EventListenerA(delegateEventListenerAOfGroupA));
+        eventBusRule.subscribe(eventListenerAOfGroupA);
 
         final SnoopEventListener delegateEventListenerAOfGroupB = new SnoopEventListener(countDownLatch);
         final GroupB.EventListenerA eventListenerAOfGroupB = spy(new GroupB.EventListenerA(delegateEventListenerAOfGroupB));
-
-        eventBusRule.subscribe(eventListenerAOfGroupA, eventListenerAOfGroupB);
+        eventBusRule.subscribe(eventListenerAOfGroupB);
 
         // When
         eventBusRule.publish(eventMessage);
@@ -142,25 +144,26 @@ public class KafkaTerminalITest {
     }
 
     @Test
-    public void two_event_listeners_defined_by_the_same_domain_should_receive_the_event_only_one_time_after_publication() throws InterruptedException {
+    public void two_event_listeners_defined_by_the_same_domain_should_receive_the_event_only_one_time_after_publication() throws Throwable {
         // Given
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final TestEventBus eventBusB = new TestEventBus(
+                createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
+                createClusterSelectorFactory(PREFIX),
+                KAFKA_PROPERTIES_MAP.get("zookeeper.connect")
+        );
+        eventBusB.before();
 
-        final CustomEventMessage eventMessage = new CustomEventMessage("A4");
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
 
         final SnoopEventListener delegateEventListenerA = new SnoopEventListener(countDownLatch);
         final GroupA.EventListenerA eventListenerA = new GroupA.EventListenerA(delegateEventListenerA);
+        eventBusRule.subscribe(eventListenerA);
 
         final SnoopEventListener delegateEventListenerB = new SnoopEventListener(countDownLatch);
         final GroupA.EventListenerB eventListenerB = new GroupA.EventListenerB(delegateEventListenerB);
-
-        final EventBusWrapper eventBusB = new EventBusWrapper(
-                createClusterSelectorFactory(PREFIX).create(),
-                createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP).create()
-        );
-
-        eventBusRule.subscribe(eventListenerA);
         eventBusB.subscribe(eventListenerB);
+
+        final CustomEventMessage eventMessage = new CustomEventMessage("A4");
 
         // When
         eventBusRule.publish(eventMessage);
@@ -175,12 +178,28 @@ public class KafkaTerminalITest {
         );
 
         // clean
-        eventBusB.shutdown();
+        eventBusB.after();
     }
 
     public static class CustomEventMessage extends GenericEventMessage<String> {
         public CustomEventMessage(String payload) {
             super(payload);
         }
+    }
+
+    public static ClusterSelectorFactory createClusterSelectorFactory(final String prefix) {
+        return new ClassnameDynamicClusterSelectorFactory(
+                prefix,
+                new ClusterFactory() {
+                    @Override
+                    public Cluster create(final String name) {
+                        return new SimpleCluster(name);
+                    }
+                }
+        );
+    }
+
+    public static EventBusTerminalFactory createEventBusTerminalFactory(final Map<String, String> properties) {
+        return new KafkaTerminalFactory(from(properties));
     }
 }

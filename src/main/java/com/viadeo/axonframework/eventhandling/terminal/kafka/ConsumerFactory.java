@@ -1,5 +1,6 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
+import com.google.common.base.Objects;
 import kafka.consumer.*;
 import kafka.serializer.DefaultDecoder;
 import kafka.serializer.StringEncoder;
@@ -17,6 +18,8 @@ import static com.google.common.base.Preconditions.checkState;
 public class ConsumerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerFactory.class);
+
+    public static final String CONSUMER_TOPIC_FILTER_REGEX = "consumer.stream.filter.regex";
 
     private final DefaultDecoder keyDecoder;
     private final EventMessageSerializer valueDecoder;
@@ -45,8 +48,13 @@ public class ConsumerFactory {
     public List<KafkaStream<byte[], EventMessage>> createStreams(final int numStreams, final ConsumerConnector consumer){
         checkNotNull(consumer);
         checkState(numStreams > 0);
+
+        final String rawRegex = Objects.firstNonNull(baseConfig.props().props().getProperty(CONSUMER_TOPIC_FILTER_REGEX), ".*");
+
+        LOGGER.debug("Creating messages streams with filter using the regex : '{}'", rawRegex);
+
         return JavaConversions.asList(consumer.createMessageStreamsByFilter(
-                new Whitelist(".*"),
+                new Whitelist(rawRegex),
                 numStreams,
                 keyDecoder,
                 valueDecoder

@@ -1,20 +1,21 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
-import kafka.consumer.Consumer;
-import kafka.consumer.ConsumerConfig;
-import kafka.consumer.ConsumerConnector;
+import kafka.consumer.*;
+import kafka.serializer.Decoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import scala.collection.mutable.ArraySeq;
 
 import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
@@ -58,6 +59,8 @@ public class ConsumerFactoryUTest {
 
         // Then
         assertNotNull(consumer);
+
+        consumer.shutdown();
     }
 
     @Test(expected = NullPointerException.class)
@@ -87,6 +90,44 @@ public class ConsumerFactoryUTest {
         assertEquals("400", properties.get("zookeeper.session.timeout.ms"));
         assertEquals("200", properties.get("zookeeper.sync.time.ms"));
         assertEquals("1000", properties.get("auto.commit.interval.ms"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void createStreams_withoutTopicFilterRegex_isOk() {
+        // Given
+        final ConsumerFactory consumerFactory = new ConsumerFactory(createDefaultConsumerConfig());
+        final ConsumerConnector consumer = mock(ConsumerConnector.class);
+        when(consumer.createMessageStreamsByFilter(any(TopicFilter.class), anyInt(), any(Decoder.class), any(Decoder.class))).thenReturn(new ArraySeq(0));
+
+        // When
+        consumerFactory.createStreams(1, consumer);
+
+        // Then
+        verify(consumer).createMessageStreamsByFilter(
+                refEq(new Whitelist(".*")), anyInt(), any(Decoder.class), any(Decoder.class)
+        );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void createStreams_withTopicFilterRegex_isOk() {
+        // Given
+        final String rawRegex = "foo.*";
+        final ConsumerConfig consumerConfig = createDefaultConsumerConfig();
+        consumerConfig.props().props().setProperty(ConsumerFactory.CONSUMER_TOPIC_FILTER_REGEX, rawRegex);
+
+        final ConsumerFactory consumerFactory = new ConsumerFactory(consumerConfig);
+        final ConsumerConnector consumer = mock(ConsumerConnector.class);
+        when(consumer.createMessageStreamsByFilter(any(TopicFilter.class), anyInt(), any(Decoder.class), any(Decoder.class))).thenReturn(new ArraySeq(0));
+
+        // When
+        consumerFactory.createStreams(1, consumer);
+
+        // Then
+        verify(consumer).createMessageStreamsByFilter(
+                refEq(new Whitelist(rawRegex)), anyInt(), any(Decoder.class), any(Decoder.class)
+        );
     }
 
     public static ConsumerConfig createDefaultConsumerConfig() {

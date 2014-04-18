@@ -7,4 +7,9 @@ public interface EventBusTerminalFactory {
     EventBusTerminal create();
 
     EventBusTerminalFactory with(TopicStrategy topicStrategy);
+
+    void setConsumerProperty(String consumerStreamFilterRegex, Object value);
+
+    void setProducerProperty(String consumerStreamFilterRegex, Object value);
+
 }

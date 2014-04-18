@@ -3,10 +3,7 @@ package com.viadeo.axonframework.eventhandling;
 import com.google.common.collect.Lists;
 import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
 import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
-import com.viadeo.axonframework.eventhandling.terminal.kafka.PrefixTopicStrategy;
-import com.viadeo.axonframework.eventhandling.terminal.kafka.TopicStatement;
-import com.viadeo.axonframework.eventhandling.terminal.kafka.TopicStrategy;
-import com.viadeo.axonframework.eventhandling.terminal.kafka.TopicStrategyFactory;
+import com.viadeo.axonframework.eventhandling.terminal.kafka.*;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.ClusteringEventBus;
 import org.axonframework.eventhandling.EventBus;
@@ -48,6 +45,10 @@ public class TestEventBus extends ExternalResource {
             public TopicStrategy create() {
                 final String prefix = UUID.randomUUID().toString();
                 LOGGER.debug("Generated topic prefix : {}", prefix);
+
+                // set the generated prefix as property, TODO found a better way in order to pass this restriction to our consumer
+                terminalFactory.setConsumerProperty(ConsumerFactory.CONSUMER_TOPIC_FILTER_REGEX, prefix + ".*");
+
                 return new PrefixTopicStrategy(prefix);
             }
         }, zkConnect);

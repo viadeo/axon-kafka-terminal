@@ -73,16 +73,17 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
     }
 
     protected void publish(final KeyedMessage<String, EventMessage> message) {
+        final String event = message.message().getPayloadType().getSimpleName();
         final String topic = message.topic();
 
         try {
             producer.send(message);
-            LOGGER.debug("Sent message with '{}' as identifier on the '{}' topic", message.key(), topic);
+            LOGGER.debug("Sent '{}' message with '{}' as identifier on the '{}' topic", event, message.key(), topic);
 
-            metricHelper.markSentMessage(topic);
+            metricHelper.markSentMessage(topic, event);
         } catch (Throwable t) {
-            LOGGER.error("Unexpected error while sending a message with '{}' as identifier on the '{}' topic", message.key(), topic, t);
-            metricHelper.markErroredWhileSendingMessage(topic);
+            LOGGER.error("Unexpected error while sending '{}' message with '{}' as identifier on the '{}' topic", event, message.key(), topic, t);
+            metricHelper.markErroredWhileSendingMessage(topic, event);
         }
     }
 

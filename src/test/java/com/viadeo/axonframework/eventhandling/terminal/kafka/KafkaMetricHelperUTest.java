@@ -31,8 +31,8 @@ public class KafkaMetricHelperUTest {
         kafkaMetricHelper.markReceivedMessage("bar");
 
         // Then
-        verify(metricRegistry).meter("foo.bar.received_message");
-        verify(metricRegistry).meter("foo.received_message");
+        verify(metricRegistry).meter("foo.consumer.event.bar.receive");
+        verify(metricRegistry).meter("foo.consumer.receive");
         verify(meter, times(2)).mark();
     }
 
@@ -46,8 +46,8 @@ public class KafkaMetricHelperUTest {
         kafkaMetricHelper.markErroredWhileReceivingMessage("bar");
 
         // Then
-        verify(metricRegistry).meter("foo.bar.received_message_errors");
-        verify(metricRegistry).meter("foo.received_message_errors");
+        verify(metricRegistry).meter("foo.consumer.event.bar.error");
+        verify(metricRegistry).meter("foo.consumer.error");
         verify(meter, times(2)).mark();
     }
 
@@ -58,12 +58,13 @@ public class KafkaMetricHelperUTest {
         final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        kafkaMetricHelper.markSentMessage("bar");
+        kafkaMetricHelper.markSentMessage("bar", "hoy");
 
         // Then
-        verify(metricRegistry).meter("foo.bar.sent_message");
-        verify(metricRegistry).meter("foo.sent_message");
-        verify(meter, times(2)).mark();
+        verify(metricRegistry).meter("foo.producer.topic.bar.send");
+        verify(metricRegistry).meter("foo.producer.event.hoy.send");
+        verify(metricRegistry).meter("foo.producer.send");
+        verify(meter, times(3)).mark();
     }
 
     @Test
@@ -73,11 +74,12 @@ public class KafkaMetricHelperUTest {
         final KafkaMetricHelper kafkaMetricHelper = new KafkaMetricHelper(metricRegistry, prefix);
 
         // When
-        kafkaMetricHelper.markErroredWhileSendingMessage("bar");
+        kafkaMetricHelper.markErroredWhileSendingMessage("bar", "hoy");
 
         // Then
-        verify(metricRegistry).meter("foo.bar.sent_message_errors");
-        verify(metricRegistry).meter("foo.sent_message_errors");
-        verify(meter, times(2)).mark();
+        verify(metricRegistry).meter("foo.producer.topic.bar.error");
+        verify(metricRegistry).meter("foo.producer.event.hoy.error");
+        verify(metricRegistry).meter("foo.producer.error");
+        verify(meter, times(3)).mark();
     }
 }

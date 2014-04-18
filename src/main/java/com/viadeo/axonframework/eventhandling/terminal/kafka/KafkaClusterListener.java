@@ -46,7 +46,7 @@ public class KafkaClusterListener implements Shutdownable {
 
         final List<KafkaStream<byte[], EventMessage>> streams = consumerFactory.createStreams(numberOfStreamListener, consumer);
         for (final KafkaStream<byte[], EventMessage> stream : streams) {
-            executor.submit(new KafkaStreamListener(cluster, stream, metricHelper, topicStrategy));
+            executor.submit(new KafkaStreamListener(cluster, stream, metricHelper));
         }
 
         LOGGER.debug("Created cluster listener on '{}'", cluster.getName());
@@ -67,18 +67,15 @@ public class KafkaClusterListener implements Shutdownable {
         private final Cluster cluster;
         private final KafkaStream<byte[], EventMessage> stream;
         private final KafkaMetricHelper metricHelper;
-        private final TopicStrategy topicStrategy;
 
         public KafkaStreamListener(
                 final Cluster cluster,
                 final KafkaStream<byte[], EventMessage> stream,
-                final KafkaMetricHelper metricHelper,
-                final TopicStrategy topicStrategy
+                final KafkaMetricHelper metricHelper
         ) {
             this.cluster = checkNotNull(cluster);
             this.stream = checkNotNull(stream);
             this.metricHelper= checkNotNull(metricHelper);
-            this.topicStrategy = checkNotNull(topicStrategy);
         }
 
         @Override
@@ -89,19 +86,17 @@ public class KafkaClusterListener implements Shutdownable {
 
             while (it.hasNext()) {
                 final EventMessage message = it.next().message();
-
-                final String topic = topicStrategy.getTopic(message);
+                final String event = message.getPayloadType().getSimpleName();
 
                 try {
                     cluster.publish(message);
-                    LOGGER.info("Received message with '{}' as identifier from the '{}' topic, payload:'{}'",
-                            message.getIdentifier(), topic, message.getPayload());
+                    LOGGER.info("Received '{}' message with '{}' as identifier", event, message.getIdentifier());
 
-                    metricHelper.markReceivedMessage(topic);
+                    metricHelper.markReceivedMessage(event);
                 } catch (Throwable t) {
-                    LOGGER.error("Unexpected error while receiving a message with '{}' as identifier from the '{}' topic",
-                            message.getIdentifier(), topic, t);
-                    metricHelper.markErroredWhileReceivingMessage(topic);
+                    LOGGER.error("Unexpected error while receiving '{}' message with '{}' as identifier", event,
+                            message.getIdentifier(), t);
+                    metricHelper.markErroredWhileReceivingMessage(event);
                 }
             }
         }

@@ -17,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ProducerFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerFactory.class);
-    private static Optional<String> brokerId = Optional.absent();
+    private static Optional<String> clientId = Optional.absent();
 
     private final Properties baseProperties;
 
@@ -26,11 +26,11 @@ public class ProducerFactory {
     }
 
     public <K, V> Producer<K, V> create() {
-        final Properties properties = getPropertiesFor(getBrokerId());
+        final Properties properties = getPropertiesFor(getClientId());
         return new Producer<>(new ProducerConfig(properties));
     }
 
-    protected Properties getPropertiesFor(final String brokerId) {
+    protected Properties getPropertiesFor(final String clientId) {
         final Properties properties = new Properties();
 
         properties.put("serializer.class", EventMessageSerializer.class.getName());
@@ -40,23 +40,23 @@ public class ProducerFactory {
             properties.put(key, baseProperties.get(key));
         }
 
-        properties.put("broker.id", brokerId);
+        properties.put("client.id", clientId);
 
-        LOGGER.debug("Get properties for '{}' : {}", brokerId, properties);
+        LOGGER.debug("Get properties for '{}' : {}", clientId, properties);
 
         return properties;
     }
 
-    protected String getBrokerId() {
-        if ( ! brokerId.isPresent()) {
+    protected String getClientId() {
+        if ( ! clientId.isPresent()) {
             try {
-                brokerId = Optional.fromNullable(InetAddress.getLocalHost().getCanonicalHostName());
+                clientId = Optional.fromNullable(InetAddress.getLocalHost().getCanonicalHostName());
             } catch (UnknownHostException e) {
-                brokerId = Optional.of(UUID.randomUUID().toString());
-                LOGGER.warn("Unable to define 'broker.id' property. Generating default : {}", brokerId, e);
+                clientId = Optional.of(UUID.randomUUID().toString());
+                LOGGER.warn("Unable to define 'client.id' property. Generating default : {}", clientId, e);
             }
         }
-        return brokerId.get();
+        return clientId.get();
     }
 
 }

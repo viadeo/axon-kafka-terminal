@@ -13,6 +13,6 @@ public class PrefixTopicStrategy extends DefaultTopicStrategy {
 
     @Override
     public String getTopic(final EventMessage eventMessage) {
-        return prefix + "_" + super.getTopic(eventMessage);
+        return prefix + super.getTopic(eventMessage);
     }
 }

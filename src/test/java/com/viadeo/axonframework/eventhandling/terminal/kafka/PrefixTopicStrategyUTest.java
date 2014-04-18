@@ -10,7 +10,7 @@ public class PrefixTopicStrategyUTest {
     @Test
     public void getTopic_returnPrefixedTopic() {
         // Given
-        final PrefixTopicStrategy topicStrategy = new PrefixTopicStrategy("aloha");
+        final PrefixTopicStrategy topicStrategy = new PrefixTopicStrategy("aloha_");
 
         // When
         final String topic = topicStrategy.getTopic(new GenericEventMessage<>("something"));

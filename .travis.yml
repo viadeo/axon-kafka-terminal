@@ -1,0 +1,11 @@
+language:
+ - java
+install:
+ - TERM=dumb gradle tasks
+ - sudo sh ./vagrant/install_kafka.sh
+ - sudo sh ./vagrant/configure_kafka.sh
+ - sudo sh ./vagrant/start_services.sh
+script:
+ - sleep 5
+ - ps aux | grep kafka
+ - TERM=dumb gradle check --info --stacktrace

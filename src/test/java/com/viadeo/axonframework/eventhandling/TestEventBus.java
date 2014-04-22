@@ -99,18 +99,18 @@ public class TestEventBus extends ExternalResource {
         }
         currentEventListeners.clear();
 
-        for (final EventMessage eventMessage : eventMessages) {
-            final String topic = currentTopicStrategy.getTopic(eventMessage);
-            topicStatement.remove(topic);
-            LOGGER.debug("Deleted topic : {}", topic);
-        }
-
         if (currentTerminal instanceof Shutdownable) {
             try {
                 ((Shutdownable)currentTerminal).shutdown();
             } catch (IOException e) {
                 LOGGER.error("Unexpected error while shutdown the terminal");
             }
+        }
+
+        for (final EventMessage eventMessage : eventMessages) {
+            final String topic = currentTopicStrategy.getTopic(eventMessage);
+            topicStatement.remove(topic);
+            LOGGER.debug("Deleted topic : {}", topic);
         }
 
         currentTopicStrategy = null;

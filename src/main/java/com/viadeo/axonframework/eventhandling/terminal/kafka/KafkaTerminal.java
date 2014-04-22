@@ -107,10 +107,10 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
 
     @Override
     public void shutdown() {
+        producer.close();
         for (final KafkaClusterListener clusterListener : clusterListenerByGroup.values()) {
             clusterListener.shutdown();
         }
-        producer.close();
     }
 
 }

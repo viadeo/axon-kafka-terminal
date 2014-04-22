@@ -36,12 +36,12 @@ public class KafkaTerminalITest {
 
     public static final ImmutableMap<String, String> KAFKA_PROPERTIES_MAP = ImmutableMap.<String, String>builder()
             // PRODUCER
-            .put("metadata.broker.list", "192.168.5.30:9092")
+            .put("metadata.broker.list", "localhost:9092")
             .put("request.required.acks", "1")
             .put("producer.type", "sync")
 
             //CONSUMER
-            .put("zookeeper.connect", "192.168.5.30:2181")
+            .put("zookeeper.connect", "localhost:2181")
              // this property will be overridden by the cluster
             .put("group.id", "0")
             // !important; without the following property then this suite is unstable (due to the process of the auto creation topic)

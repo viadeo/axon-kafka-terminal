@@ -1,6 +1,7 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.UUID;
@@ -10,11 +11,16 @@ import static org.junit.Assert.assertTrue;
 
 public class TopicStatementITest {
 
-    private TopicStatement topicStatement;
+    private static TopicStatement topicStatement;
 
-    @Before
-    public void setup() {
+    @BeforeClass
+    public static void setup() {
         topicStatement = new TopicStatement(KafkaTerminalITest.KAFKA_PROPERTIES_MAP.get("zookeeper.connect"));
+    }
+
+    @AfterClass
+    public static void clear() {
+        topicStatement.remove("A", "B", "C", "D");
     }
 
     @Test

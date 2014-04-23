@@ -3,7 +3,6 @@ package com.viadeo.axonframework.eventhandling.terminal.kafka;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.viadeo.axonframework.eventhandling.Shutdownable;
 import kafka.consumer.ConsumerConnector;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
@@ -12,14 +11,13 @@ import org.axonframework.eventhandling.Cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.*;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 
-public class KafkaClusterListener implements Shutdownable {
+public class KafkaClusterListener implements Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaClusterListener.class);
 
@@ -60,7 +58,7 @@ public class KafkaClusterListener implements Shutdownable {
     }
 
     @Override
-    public void shutdown() {
+    public void close() {
         final CountDownLatch countDownLatch = new CountDownLatch(streamListeners.size());
         final TerminateCallback terminateCallback = new TerminateCallback() {
             @Override

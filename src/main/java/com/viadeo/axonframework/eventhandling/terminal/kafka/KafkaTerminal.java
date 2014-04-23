@@ -3,7 +3,6 @@ package com.viadeo.axonframework.eventhandling.terminal.kafka;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.viadeo.axonframework.eventhandling.Shutdownable;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import org.axonframework.domain.EventMessage;
@@ -12,6 +11,7 @@ import org.axonframework.eventhandling.EventBusTerminal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p/>
  * This terminal does not dispatch Events internally, as it relies on each cluster to listen to it's own Kafka stream.
  */
-public class KafkaTerminal implements EventBusTerminal, Shutdownable {
+public class KafkaTerminal implements EventBusTerminal, Closeable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaTerminal.class);
 
@@ -106,10 +106,10 @@ public class KafkaTerminal implements EventBusTerminal, Shutdownable {
     }
 
     @Override
-    public void shutdown() {
+    public void close() {
         producer.close();
         for (final KafkaClusterListener clusterListener : clusterListenerByGroup.values()) {
-            clusterListener.shutdown();
+            clusterListener.close();
         }
     }
 

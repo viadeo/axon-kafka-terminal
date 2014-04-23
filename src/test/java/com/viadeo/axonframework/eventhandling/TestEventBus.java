@@ -13,6 +13,7 @@ import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -99,9 +100,9 @@ public class TestEventBus extends ExternalResource {
         }
         currentEventListeners.clear();
 
-        if (currentTerminal instanceof Shutdownable) {
+        if (currentTerminal instanceof Closeable) {
             try {
-                ((Shutdownable)currentTerminal).shutdown();
+                ((Closeable)currentTerminal).close();
             } catch (IOException e) {
                 LOGGER.error("Unexpected error while shutdown the terminal");
             }

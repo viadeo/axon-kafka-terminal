@@ -1,9 +1,32 @@
 apply plugin: 'java'
 apply plugin: 'maven' 
+apply plugin: 'signing'
 apply plugin: 'idea'
 
 group = 'com.viadeo.axonframework'
 version = '0.1'
+ext.packaging = 'jar'
+
+def isDevBuild
+def isCiBuild
+def isReleaseBuild
+
+def sonatypeRepositoryUrl
+
+//set build variables based on build type (release, continuous integration, development)
+if(hasProperty("release")) {
+  println "Preparing a release..."
+  isReleaseBuild = true
+  sonatypeRepositoryUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+} else if (hasProperty("ci")) {
+  println "Preparing a snapshot..."
+  isCiBuild = true
+  version += "-SNAPSHOT"
+  sonatypeRepositoryUrl = "https://oss.sonatype.org/content/repositories/snapshots"
+} else {
+  println "is development build..."
+  isDevBuild = true
+}
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -42,4 +65,81 @@ dependencies {
   testCompile 'org.mockito:mockito-all:1.9.5-rc1'
   testCompile 'org.powermock:powermock-module-junit4:1.5.3'
   testCompile 'org.powermock:powermock-api-mockito:1.5.3'
+}
+
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives jar
+  archives javadocJar
+  archives sourcesJar
+}
+
+if(isReleaseBuild) {
+  signing {
+    sign configurations.archives
+  }
+} else {
+  task signArchives {
+    // do nothing
+  }
+}
+
+uploadArchives {
+  repositories {
+    if (isDevBuild) {
+      mavenLocal()
+    }
+    else {
+      mavenDeployer {
+        if(isReleaseBuild) {
+          beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+        }
+
+        repository(url: sonatypeRepositoryUrl) {
+          authentication(userName: sonatypeUsername, password: sonatypePassword)
+        }
+
+        pom.project {
+          name 'axon-kafka-terminal'
+          packaging 'jar'
+          description 'Implementation of axon-framework terminal using Kafka (a distributed event bus)'
+          url 'http://github.com/viadeo/axon-kafka-terminal'
+
+          scm {
+            connection 'scm:git@github.com:viadeo/axon-kafka-terminal.git'
+            developerConnection 'scm:git@github.com:viadeo/axon-kafka-terminal.git'
+            url 'scm:git@github.com:viadeo/axon-kafka-terminal.git'
+          }
+
+          licenses {
+            license {
+              name 'The Apache Software License, Version 2.0'
+              url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+              distribution 'repo'
+            }
+          }
+
+          developers {
+            developer {
+              id 'cmurer'
+              name 'Cedric Murer'
+            }
+            developer {
+              id 'dstendardi'
+              name 'David Stendardi'
+            }
+          }
+        }
+      }
+    }
+  }
 }

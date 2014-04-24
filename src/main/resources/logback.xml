@@ -5,16 +5,16 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
         </encoder>
     </appender>
-    <logger name="com.viadeo.axonframework.eventhandling" level="DEBUG" additivity="false">
+    <logger name="com.viadeo.axonframework.eventhandling" level="INFO" additivity="false">
         <appender-ref ref="STDOUT" />
     </logger>
-    <logger name="org.I0Itec.zkclient" level="DEBUG">
+    <logger name="org.I0Itec.zkclient" level="INFO">
         <appender-ref ref="STDOUT" />
     </logger>
-    <logger name="kafka" level="DEBUG">
+    <logger name="kafka" level="INFO">
         <appender-ref ref="STDOUT" />
     </logger>
-    <root level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

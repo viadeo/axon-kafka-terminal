@@ -170,9 +170,8 @@ public class KafkaTerminalITest {
         countDownLatch.await(TIMEOUT, TimeUnit.MILLISECONDS);
 
         // Then
-        assertEquals(" unexpected number of received message,", 0, countDownLatch.getCount());
-        assertEquals(0, countDownLatch.getCount());
-        assertTrue(
+        assertEquals("Unexpected number of received message", 0, countDownLatch.getCount());
+        assertTrue("At least one of the subscribed listeners should receive the message",
                 (0 == delegateEventListenerA.actualEvents.size() && 1 == delegateEventListenerB.actualEvents.size()) ||
                         (1 == delegateEventListenerA.actualEvents.size() && 0 == delegateEventListenerB.actualEvents.size())
         );

@@ -4,7 +4,7 @@ apply plugin: 'signing'
 apply plugin: 'idea'
 
 group = 'com.viadeo.axonframework'
-version = '0.1'
+version = '0.1.1'
 ext.packaging = 'jar'
 
 def isDevBuild

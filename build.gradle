@@ -44,7 +44,7 @@ repositories {
 }
 
 dependencies {
-  compile('org.apache.kafka:kafka_2.8.0:0.8.1') {
+  compile('org.apache.kafka:kafka_2.8.0:0.8.1.1') {
     exclude module: 'jms'
     exclude module: 'jmxtools'
     exclude module: 'jmxri'

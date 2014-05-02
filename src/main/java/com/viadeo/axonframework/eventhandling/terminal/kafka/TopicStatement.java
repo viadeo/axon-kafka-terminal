@@ -69,7 +69,7 @@ public class TopicStatement {
                     opts.checkArgs();
 
                     try {
-                        TopicCommand.deleteTopic(zkClient, opts);
+                        TopicCommand.alterTopic(zkClient, opts);
                     } catch (Throwable e) {
                         LOGGER.warn("unable to delete topic: '{}", topic, e);
                     }

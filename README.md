@@ -1,9 +1,8 @@
-[![Build Status](https://travis-ci.org/viadeo/axon-kafka-terminal.svg?branch=master)](https://travis-ci.org/viadeo/axon-kafka-terminal)
-
 #axon-kafka-terminal
-====================
 
 Implementation of axon-framework terminal using Kafka (a distributed event bus).
+
+[![Build Status](https://travis-ci.org/viadeo/axon-kafka-terminal.svg?branch=master)](https://travis-ci.org/viadeo/axon-kafka-terminal)
 
 ## How to deploy Snapshots/Releases to Sonatype OSS Repository
 

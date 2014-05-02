@@ -1,5 +1,6 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
+import kafka.admin.DeleteTopicCommand;
 import kafka.admin.TopicCommand;
 import kafka.common.TopicExistsException;
 import kafka.utils.ZKStringSerializer$;
@@ -61,15 +62,11 @@ public class TopicStatement {
 
                     String[] args = {
                             "--zookeeper", zkConnect,
-                            "--delete",
                             "--topic", topic
                     };
 
-                    TopicCommand.TopicCommandOptions opts = new TopicCommand.TopicCommandOptions(args);
-                    opts.checkArgs();
-
                     try {
-                        TopicCommand.alterTopic(zkClient, opts);
+                        DeleteTopicCommand.main(args);
                     } catch (Throwable e) {
                         LOGGER.warn("unable to delete topic: '{}", topic, e);
                     }

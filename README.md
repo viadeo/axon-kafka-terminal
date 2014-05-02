@@ -6,11 +6,11 @@ Implementation of axon-framework terminal using Kafka (a distributed event bus).
 
 ## How to deploy Snapshots/Releases to Sonatype OSS Repository
 
-0. Ensure to do not propagate credentials on the public repository with this instruction : `git update-index --assume-unchanged gradle.properties`. You can reverse with `--no-assume-unchanged ` option.
+2. Specify values for the required properties in `gradle.properties` file.
 
-1. Specify values for the required properties in `gradle.properties` file.
+1. Ensure to do not propagate credentials on the public repository with this instruction : `git update-index --assume-unchanged gradle.properties` (You can reverse with `--no-assume-unchanged ` option).
 
-2. Upload artifact to Nexus : `gradle uploadArchives -P<release|ci>`.
+3. Upload artifact to Nexus : `gradle uploadArchives -P<release|ci>`.
 :warning: Without specified properties then the artifact will be uploaded locally.
 
 ### Resources

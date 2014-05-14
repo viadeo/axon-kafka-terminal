@@ -9,7 +9,6 @@ import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.SnoopEventListener;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupa.GroupA;
 import com.viadeo.axonframework.eventhandling.cluster.fixture.groupb.GroupB;
-import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.domain.GenericEventMessage;
 import org.axonframework.eventhandling.Cluster;
@@ -51,7 +50,7 @@ public class KafkaTerminalITest {
 
     @Rule
     public final TestEventBus eventBusRule = new TestEventBus(
-            createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
+            createKafkaTerminalFactory(KAFKA_PROPERTIES_MAP),
             createClusterSelectorFactory(PREFIX),
             KAFKA_PROPERTIES_MAP.get("zookeeper.connect")
     ).with(new GenericEventMessage<>(""));
@@ -147,7 +146,7 @@ public class KafkaTerminalITest {
     public void two_event_listeners_defined_by_the_same_domain_should_receive_the_event_only_one_time_after_publication() throws Throwable {
         // Given
         final TestEventBus eventBusB = new TestEventBus(
-                createEventBusTerminalFactory(KAFKA_PROPERTIES_MAP),
+                createKafkaTerminalFactory(KAFKA_PROPERTIES_MAP),
                 createClusterSelectorFactory(PREFIX),
                 KAFKA_PROPERTIES_MAP.get("zookeeper.connect")
         );
@@ -198,7 +197,7 @@ public class KafkaTerminalITest {
         );
     }
 
-    public static EventBusTerminalFactory createEventBusTerminalFactory(final Map<String, String> properties) {
+    public static KafkaTerminalFactory createKafkaTerminalFactory(final Map<String, String> properties) {
         return new KafkaTerminalFactory(from(properties));
     }
 }

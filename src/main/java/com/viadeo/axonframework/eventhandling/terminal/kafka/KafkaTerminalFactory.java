@@ -1,7 +1,6 @@
 package com.viadeo.axonframework.eventhandling.terminal.kafka;
 
 import com.codahale.metrics.MetricRegistry;
-import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import kafka.consumer.ConsumerConfig;
 import kafka.producer.ProducerConfig;
 
@@ -10,7 +9,7 @@ import java.util.Properties;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class KafkaTerminalFactory implements EventBusTerminalFactory {
+public class KafkaTerminalFactory {
 
     private final ConsumerConfig consumerConfig;
     private final ProducerConfig producerConfig;
@@ -27,28 +26,24 @@ public class KafkaTerminalFactory implements EventBusTerminalFactory {
         this.producerConfig = producerConfig;
     }
 
-    @Override
-    public EventBusTerminalFactory with(final TopicStrategy topicStrategy) {
+    public KafkaTerminalFactory with(final TopicStrategy topicStrategy) {
         this.topicStrategy = topicStrategy;
         return this;
     }
 
-    @Override
     public void setConsumerProperty(String key, Object value) {
         consumerConfig.props().props().setProperty(checkNotNull(key), checkNotNull(value).toString());
     }
 
-    @Override
     public void setProducerProperty(String key, Object value) {
         producerConfig.props().props().setProperty(checkNotNull(key), checkNotNull(value).toString());
     }
 
-    public EventBusTerminalFactory with(final KafkaMetricHelper metricHelper) {
+    public KafkaTerminalFactory with(final KafkaMetricHelper metricHelper) {
         this.metricHelper = metricHelper;
         return this;
     }
 
-    @Override
     public KafkaTerminal create() {
         if (topicStrategy == null) {
             this.topicStrategy = new DefaultTopicStrategy();

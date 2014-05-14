@@ -2,7 +2,6 @@ package com.viadeo.axonframework.eventhandling;
 
 import com.google.common.collect.Lists;
 import com.viadeo.axonframework.eventhandling.cluster.ClusterSelectorFactory;
-import com.viadeo.axonframework.eventhandling.terminal.EventBusTerminalFactory;
 import com.viadeo.axonframework.eventhandling.terminal.kafka.*;
 import org.axonframework.domain.EventMessage;
 import org.axonframework.eventhandling.ClusteringEventBus;
@@ -25,7 +24,7 @@ public class TestEventBus extends ExternalResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestEventBus.class);
 
-    private final EventBusTerminalFactory terminalFactory;
+    private final KafkaTerminalFactory terminalFactory;
     private final ClusterSelectorFactory clusterSelectorFactory;
     private final TopicStrategyFactory topicStrategyFactory;
     private final TopicStatement topicStatement;
@@ -37,7 +36,7 @@ public class TestEventBus extends ExternalResource {
     private EventBusTerminal currentTerminal;
 
     public TestEventBus(
-            final EventBusTerminalFactory terminalFactory,
+            final KafkaTerminalFactory terminalFactory,
             final ClusterSelectorFactory clusterSelectorFactory,
             final String zkConnect
     ) {
@@ -56,7 +55,7 @@ public class TestEventBus extends ExternalResource {
     }
 
     public TestEventBus(
-            final EventBusTerminalFactory terminalFactory,
+            final KafkaTerminalFactory terminalFactory,
             final ClusterSelectorFactory clusterSelectorFactory,
             final TopicStrategyFactory topicStrategyFactory,
             final String zkConnect
